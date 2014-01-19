@@ -5,7 +5,7 @@ contemporary C compilers and system headers.
 
 # Implementation Status
 
-`ed` and `sed` should work.
+`ed`, `sed` and `quiz` should work.
 
 # Source
 
