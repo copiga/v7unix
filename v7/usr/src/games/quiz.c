@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <signal.h>
+#include <stdlib.h>
 
 #define NF 10
 #define NL 300
@@ -22,8 +23,7 @@ int nc = 0;
 char line[150];
 char response[100];
 char *tmp[NF];
-int select[NF];
-char	*malloc();
+int selection[NF];
 
 readline()
 {
@@ -67,6 +67,15 @@ char *u, *v;
 	if(x!=1)
 		return(x);
 	return(eat(1,0));
+}
+
+void done()
+{
+	printf("\nRights %d, wrongs %d, ", rights, wrongs);
+	if(guesses)
+		printf("extra guesses %d, ", guesses);
+	printf("score %d%%\n",100*rights/(rights+wrongs));
+	exit(0);
 }
 
 disj(s)
@@ -268,7 +277,7 @@ char *u[];
 	int n;
 	while(readline()){
 		n = segment(line,tmp);
-		if(perm(u,m,tmp+1,n-1,select))
+		if(perm(u,m,tmp+1,n-1,selection))
 			return(1);
 	}
 	return(0);
@@ -303,9 +312,8 @@ char *argv[];
 	int z;
 	char *info;
 	long tm;
-	extern done();
 	int count;
-	info = "/usr/games/quiz.k/index";
+	info = "/usr/games/quiz.k/index";	
 	time(&tm);
 	inc = (int)tm&077774|01;
 loop:
@@ -343,7 +351,7 @@ loop:
 	readindex();
 	if(!tflag || na>nl)
 		na = nl;
-	stdout->_flag |= _IONBF;
+	setvbuf(stdout, NULL, _IONBF, 0);
 	for(;;) {
 		i = next();
 		fseek(input,xx[i]+0L,0);
@@ -351,21 +359,21 @@ loop:
 		for(j=0;j<z;j++)
 			line[j] = getc(input);
 		segment(line,tmp);
-		if(*tmp[select[0]] == '\0' || *tmp[select[1]] == '\0') {
+		if(*tmp[selection[0]] == '\0' || *tmp[selection[1]] == '\0') {
 			score[i] = 1;
 			continue;
 		}
-		publish(tmp[select[0]]);
+		publish(tmp[selection[0]]);
 		printf("\n");
 		for(count=0;;count++) {
 			if(query(response)==0) {
-				publish(tmp[select[1]]);
+				publish(tmp[selection[1]]);
 				printf("\n");
 				if(count==0) wrongs++;
 				score[i] = tflag?-1:1;
 				break;
 			}
-			x = cmp(response,tmp[select[1]]);
+			x = cmp(response,tmp[selection[1]]);
 			if(x>1) badinfo();
 			if(x==1) {
 				printf("Right!\n");
@@ -416,14 +424,6 @@ next()
 	return(ptr);
 }
 
-done()
-{
-	printf("\nRights %d, wrongs %d, ", rights, wrongs);
-	if(guesses)
-		printf("extra guesses %d, ", guesses);
-	printf("score %d%%\n",100*rights/(rights+wrongs));
-	exit(0);
-}
 instruct(info)
 char *info;
 {
